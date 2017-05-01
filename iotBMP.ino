@@ -28,8 +28,9 @@
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-/* Create a WiFi access point and provide a web server on it. */
-
+#include "DHT.h"
+#define DHTPIN D4
+#define DHTTYPE DHT11
 #include <ESP8266WiFi.h>
 #include <WiFiClient.h>
 #include <ESP8266WebServer.h>
@@ -42,10 +43,11 @@ const char *password = "";
 Adafruit_BMP085 bmp;
 
 ESP8266WebServer server(80);
+DHT dht(DHTPIN, DHTTYPE);
 
 void handleRoot() {
   String info="{ \"temp\":\""+String(bmp.readTemperature())+"\""
-  +",\"press\":\""+String(bmp.readPressure())+"\"}";
+  +",\"press\":\""+String(bmp.readPressure())+"\",\"hum\":\""+String(dht.readHumidity(),3)+"\"}";
   server.send(200, "application/json", info);
 }
 
@@ -64,6 +66,7 @@ void setup() {
   server.on("/", handleRoot);
   server.begin();
   Serial.println("HTTP server started");
+  dht.begin();
 }
 
 void loop() {
